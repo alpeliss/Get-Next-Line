@@ -6,23 +6,11 @@
 /*   By: alpeliss <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/11 14:53:40 by alpeliss          #+#    #+#             */
-/*   Updated: 2020/01/11 18:58:55 by alpeliss         ###   ########.fr       */
+/*   Updated: 2020/01/16 21:02:42 by alpeliss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-static int	ft_strlen(char *str)
-{
-	int	i;
-
-	if (!str)
-		return (0);
-	i = 0;
-	while (str[i])
-		i++;
-	return (i);
-}
 
 static char	*get_line(char *save)
 {
@@ -30,34 +18,18 @@ static char	*get_line(char *save)
 	char	*line;
 
 	i = 0;
-	while (save[i] && save[i] != '\n')
+	while (save && save[i] && save[i] != '\n')
 		i++;
 	if (!(line = (char *)malloc((i + 1) * sizeof(char))))
 		return (NULL);
 	i = 0;
-	while (save[i] && save[i] != '\n')
+	while (save && save[i] && save[i] != '\n')
 	{
 		line[i] = save[i];
 		i++;
 	}
 	line[i] = '\0';
 	return (line);
-}
-
-static int	is_line(char *save)
-{
-	int	i;
-
-	if (!save)
-		return (0);
-	i = 0;
-	while (save[i])
-	{
-		if (save[i] == '\n')
-			return (1);
-		i++;
-	}
-	return (0);
 }
 
 static char	*super_join(char *save, char *temp, int lu)
@@ -86,56 +58,61 @@ static char	*super_join(char *save, char *temp, int lu)
 	return (new);
 }
 
-static char	*update_line(char *save)
+static char	*update_line(char *save, int *lu)
 {
 	char	*new;
 	int		i;
 	int		j;
 
-	if (!ft_strlen(save))
-		return (0);
+	*lu = 0;
+	if (!save)
+		return (save);
 	i = 0;
 	while (save[i] && save[i] != '\n')
 		i++;
-	if (save[i++] != '\n')		
-		return (0);
-	if (!(new = (char *)malloc((ft_strlen(save) - i + 1) * sizeof(char))))
-		return (0);
-	j = 0;
-	while (save[i + j])
+	if ((!save[i++])
+		|| (!(new = (char *)malloc((ft_strlen(save) - i + 1) * sizeof(char)))))
 	{
-		new[j] = save[i + j];
-		j++;
+		free(save);
+		if (save[i - 1])
+			*lu = -1;
+		return (0);
 	}
+	j = -1;
+	while (save[i + ++j])
+		new[j] = save[i + j];
 	new[j] = '\0';
 	free(save);
 	return (new);
 }
 
-int			get_next_line(int fd, char **line)
+static int	get_next_l(int fd, char **line, unsigned int buff)
 {
-	char		temp[BUFFER_SIZE + 1];
-	static char	*save;
+	char		temp[buff + 1];
+	static char	*save[OPEN_MAX];
 	int			lu;
 
 	if (!line || read(fd, temp, 0) < 0)
 		return (-1);
 	*line = NULL;
 	lu = 0;
-	while (!is_line(save) && (lu = read(fd, temp, BUFFER_SIZE)))
-	{
-		if (!(save = super_join(save, temp, lu)))
+	while (!is_line(save[fd]) && (lu = read(fd, temp, buff)))
+		if (!(save[fd] = super_join(save[fd], temp, lu)))
 			return (-1);
-	}
-	if (!(*line = get_line(save)))
+	if (!(*line = get_line(save[fd])))
 		return (-1);
-//	write(1, "1->", 3);
-//	write(1, save, ft_strlen(save));
-//	write(1, "<-\n", 3);
-//	write(1, "2->", 3);
-//	write(1, save, ft_strlen(save));
-//	write(1, "<-\n\n---\n\n", 9);
-	if ((save = update_line(save)))
-		return (1);
-	return (0);
+	save[fd] = update_line(save[fd], &lu);
+	if (!save[fd])
+		return (lu);
+	return (1);
+}
+
+int			get_next_line(int fd, char **line)
+{
+	unsigned int	buff;
+
+	if (BUFFER_SIZE <= 0)
+		return (-1);
+	buff = BUFFER_SIZE;
+	return (get_next_l(fd, line, buff));
 }
