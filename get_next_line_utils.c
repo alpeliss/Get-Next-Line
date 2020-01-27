@@ -6,7 +6,7 @@
 /*   By: alpeliss <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/11 15:10:18 by alpeliss          #+#    #+#             */
-/*   Updated: 2020/01/16 19:41:39 by alpeliss         ###   ########.fr       */
+/*   Updated: 2020/01/19 15:57:54 by alpeliss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,13 @@ int		is_line(char *save)
 	int	i;
 
 	if (!save)
-		return (0);
+		return (-2);
 	i = 0;
 	while (save[i])
 	{
 		if (save[i] == '\n')
-			return (1);
+			return (i);
 		i++;
 	}
-	return (0);
+	return (-1);
 }

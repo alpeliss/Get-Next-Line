@@ -6,7 +6,7 @@
 /*   By: alpeliss <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/11 14:53:40 by alpeliss          #+#    #+#             */
-/*   Updated: 2020/01/16 21:02:42 by alpeliss         ###   ########.fr       */
+/*   Updated: 2020/01/19 15:56:30 by alpeliss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,29 +58,30 @@ static char	*super_join(char *save, char *temp, int lu)
 	return (new);
 }
 
-static char	*update_line(char *save, int *lu)
+static char	*update_line(char *save, int *lu, int j)
 {
 	char	*new;
 	int		i;
-	int		j;
 
 	*lu = 0;
-	if (!save)
-		return (save);
-	i = 0;
-	while (save[i] && save[i] != '\n')
-		i++;
-	if ((!save[i++])
-		|| (!(new = (char *)malloc((ft_strlen(save) - i + 1) * sizeof(char)))))
+	if ((i = is_line(save)) < 0)
 	{
-		free(save);
-		if (save[i - 1])
-			*lu = -1;
+		if (i == -1)
+			free(save);
 		return (0);
 	}
-	j = -1;
-	while (save[i + ++j])
+	if (!(new = (char *)malloc((ft_strlen(save) - i + 1) * sizeof(char))))
+	{
+		*lu = -1;
+		free(save);
+		return (0);
+	}
+	i++;
+	while (save[i + j])
+	{
 		new[j] = save[i + j];
+		j++;
+	}
 	new[j] = '\0';
 	free(save);
 	return (new);
@@ -96,12 +97,12 @@ static int	get_next_l(int fd, char **line, unsigned int buff)
 		return (-1);
 	*line = NULL;
 	lu = 0;
-	while (!is_line(save[fd]) && (lu = read(fd, temp, buff)))
+	while (is_line(save[fd]) < 0 && (lu = read(fd, temp, buff)))
 		if (!(save[fd] = super_join(save[fd], temp, lu)))
 			return (-1);
 	if (!(*line = get_line(save[fd])))
 		return (-1);
-	save[fd] = update_line(save[fd], &lu);
+	save[fd] = update_line(save[fd], &lu, 0);
 	if (!save[fd])
 		return (lu);
 	return (1);

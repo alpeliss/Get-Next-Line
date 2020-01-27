@@ -6,7 +6,7 @@
 /*   By: alpeliss <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/11 14:54:37 by alpeliss          #+#    #+#             */
-/*   Updated: 2020/01/16 17:18:04 by alpeliss         ###   ########.fr       */
+/*   Updated: 2020/01/16 19:37:04 by alpeliss         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,6 @@
 
 int	get_next_line(int fd, char **line);
 int	ft_strlen(char *str);
-int	my_free(char *str, int i);
+int	is_line(char *save);
 
 #endif
